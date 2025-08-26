@@ -2,6 +2,8 @@
 
 A Ruby client for the [Langfuse](https://langfuse.com) observability platform.
 
+> **Note:** This gem is a fork of the original `langfuse` gem available on RubyGems.org. The original gem does not appear to have a public GitHub repository. This fork was created to provide an open-source, community-maintained version with bug fixes and improvements.
+
 ## Installation
 
 Add this line to your application's Gemfile:
