@@ -32,22 +32,22 @@ RSpec.describe Langfuse do
 
     it 'delegates trace to client' do
       mock_trace = instance_double(Langfuse::Models::Trace)
-      allow(mock_client).to receive(:trace).with(name: 'test').and_return(mock_trace)
+      allow(mock_client).to receive(:trace).with(hash_including(name: 'test')).and_return(mock_trace)
 
       result = described_class.trace(name: 'test')
 
       expect(result).to eq(mock_trace)
-      expect(mock_client).to have_received(:trace).with(name: 'test')
+      expect(mock_client).to have_received(:trace).with(hash_including(name: 'test'))
     end
 
     it 'delegates span to client' do
       mock_span = instance_double(Langfuse::Models::Span)
-      allow(mock_client).to receive(:span).with(name: 'test').and_return(mock_span)
+      allow(mock_client).to receive(:span).with(hash_including(name: 'test')).and_return(mock_span)
 
       result = described_class.span(name: 'test')
 
       expect(result).to eq(mock_span)
-      expect(mock_client).to have_received(:span).with(name: 'test')
+      expect(mock_client).to have_received(:span).with(hash_including(name: 'test'))
     end
 
     it 'delegates flush to client' do

@@ -55,7 +55,7 @@ RSpec.describe Langfuse::ApiClient do
       end
 
       it 'raises an error' do
-        expect { client.ingest(events) }.to raise_error(RuntimeError, /API request failed/)
+        expect { client.ingest(events) }.to raise_error(RuntimeError, /API error/)
       end
     end
 

@@ -29,9 +29,11 @@ module Langfuse
 
       # Set authorization header using base64 encoded credentials
       auth = Base64.strict_encode64("#{@config.public_key}:#{@config.secret_key}")
-      # Log the encoded auth header for debugging
+      # Log the auth header for debugging (masked for security)
       if @config.debug
-        log("Using auth header: Basic #{auth} (public_key: #{@config.public_key}, secret_key: #{@config.secret_key})")
+        masked_auth = "#{auth[0..5]}...#{auth[-4..]}"
+        masked_secret = @config.secret_key ? "#{@config.secret_key[0..7]}..." : 'nil'
+        log("Using auth header: Basic #{masked_auth} (public_key: #{@config.public_key}, secret_key: #{masked_secret})")
       end
       request['Authorization'] = "Basic #{auth}"
 
@@ -48,8 +50,6 @@ module Langfuse
       if @config.debug
         log("Sending #{events.size} events to Langfuse API at #{@config.host}")
         log("Events: #{events.inspect}")
-        # log("Using auth header: Basic #{auth.gsub(/.(?=.{4})/, '*')}") # Mask most of the auth token
-        log("Using auth header: Basic #{auth}") # Mask most of the auth token
         log("Request url: #{uri}")
       end
 

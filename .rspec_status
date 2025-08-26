@@ -1,0 +1,23 @@
+example_id                                     | status | run_time        |
+---------------------------------------------- | ------ | --------------- |
+./spec/langfuse/api_client_spec.rb[1:1:1]      | passed | 0.00921 seconds |
+./spec/langfuse/api_client_spec.rb[1:1:2]      | passed | 0.00038 seconds |
+./spec/langfuse/api_client_spec.rb[1:1:3:1]    | passed | 0.0009 seconds  |
+./spec/langfuse/api_client_spec.rb[1:1:4:1]    | passed | 0.00303 seconds |
+./spec/langfuse/configuration_spec.rb[1:1:1:1] | passed | 0.00027 seconds |
+./spec/langfuse/configuration_spec.rb[1:1:1:2] | passed | 0.00008 seconds |
+./spec/langfuse/configuration_spec.rb[1:1:1:3] | passed | 0.00005 seconds |
+./spec/langfuse/configuration_spec.rb[1:1:1:4] | passed | 0.00027 seconds |
+./spec/langfuse/configuration_spec.rb[1:1:1:5] | passed | 0.00005 seconds |
+./spec/langfuse/configuration_spec.rb[1:1:1:6] | passed | 0.00005 seconds |
+./spec/langfuse/configuration_spec.rb[1:1:2:1] | passed | 0.00009 seconds |
+./spec/langfuse/configuration_spec.rb[1:1:2:2] | passed | 0.00006 seconds |
+./spec/langfuse/configuration_spec.rb[1:2:1]   | passed | 0.00005 seconds |
+./spec/langfuse/configuration_spec.rb[1:2:2]   | passed | 0.00006 seconds |
+./spec/langfuse/configuration_spec.rb[1:2:3]   | passed | 0.00005 seconds |
+./spec/langfuse_spec.rb[1:1]                   | passed | 0.00041 seconds |
+./spec/langfuse_spec.rb[1:2:1]                 | passed | 0.00079 seconds |
+./spec/langfuse_spec.rb[1:2:2]                 | passed | 0.00005 seconds |
+./spec/langfuse_spec.rb[1:3:1]                 | passed | 0.00029 seconds |
+./spec/langfuse_spec.rb[1:3:2]                 | passed | 0.0002 seconds  |
+./spec/langfuse_spec.rb[1:3:3]                 | passed | 0.00019 seconds |
