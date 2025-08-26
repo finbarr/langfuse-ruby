@@ -88,7 +88,7 @@ RSpec.describe Langfuse::JobAdapter do
       before do
         # Don't actually load the job file in tests
         allow(adapter).to receive(:require).with('langfuse/jobs/batch_ingestion_job')
-        
+
         # Create a mock job class
         job_class = class_double('Langfuse::Jobs::BatchIngestionJob')
         stub_const('Langfuse::Jobs::BatchIngestionJob', job_class)

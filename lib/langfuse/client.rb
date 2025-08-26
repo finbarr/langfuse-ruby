@@ -23,22 +23,22 @@ module Langfuse
 
     sig { returns(T.nilable(Thread)) }
     attr_reader :flush_thread
-    
+
     sig { returns(T.untyped) }
     attr_reader :job_adapter
 
     sig { void }
     def initialize
       @config = T.let(Langfuse.configuration, ::Langfuse::Configuration)
-      
+
       # Validate required configuration
       validate_configuration!
-      
+
       # Let Sorbet infer the type for Concurrent::Array here
       @events = T.let(Concurrent::Array.new, Concurrent::Array)
       @mutex = T.let(Mutex.new, Mutex)
       @flush_thread = T.let(nil, T.nilable(Thread))
-      
+
       # Initialize job adapter
       require 'langfuse/job_adapter'
       @job_adapter = T.let(JobAdapter.new(@config.job_backend), T.untyped)
@@ -229,13 +229,11 @@ module Langfuse
       errors = []
       errors << 'public_key is required' if @config.public_key.nil? || @config.public_key.empty?
       errors << 'secret_key is required' if @config.secret_key.nil? || @config.secret_key.empty?
-      
-      unless @config.host.start_with?('http://', 'https://')
-        errors << 'host must start with http:// or https://'
-      end
-      
+
+      errors << 'host must start with http:// or https://' unless @config.host.start_with?('http://', 'https://')
+
       return if errors.empty?
-      
+
       raise ArgumentError, "Langfuse configuration errors:\n  #{errors.join("\n  ")}"
     end
   end

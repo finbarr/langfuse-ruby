@@ -55,6 +55,15 @@ RSpec/NestedGroups:
 RSpec/SubjectStub:
   Enabled: false
 
+RSpec/VerifiedDoubleReference:
+  Enabled: false
+
+RSpec/VerifiedDoubles:
+  Enabled: false
+
+RSpec/MessageSpies:
+  Enabled: false
+
 # Disable gemspec development dependency warning since we already have them in Gemfile
 Gemspec/DevelopmentDependencies:
   Enabled: false

@@ -8,7 +8,7 @@ RSpec.describe 'Langfuse::Jobs::BatchIngestionJob' do
       { id: 'event-1', type: 'trace', body: { name: 'test' } }
     ]
   end
-  
+
   let(:api_client) { instance_double(Langfuse::ApiClient) }
   let(:config) { instance_double(Langfuse::Configuration) }
 
@@ -25,13 +25,13 @@ RSpec.describe 'Langfuse::Jobs::BatchIngestionJob' do
         def self.retry_on(*_args); end
         def self.discard_on(*_args); end
       end
-      
+
       stub_const('ActiveJob::Base', active_job_base)
-      
+
       # Require the job after stubbing ActiveJob
       require 'langfuse/jobs/batch_ingestion_job'
     end
-    
+
     let(:job) { Langfuse::Jobs::BatchIngestionJob.new }
 
     describe '#perform' do
@@ -62,8 +62,9 @@ RSpec.describe 'Langfuse::Jobs::BatchIngestionJob' do
         end
 
         it 'handles errors' do
-          expect(Rails.logger).to receive(:error).with(/Invalid event/)
+          allow(Rails.logger).to receive(:error)
           job.perform(event_hashes)
+          expect(Rails.logger).to have_received(:error).with(/Invalid event/)
         end
       end
 
