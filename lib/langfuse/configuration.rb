@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # typed: strict
 
 require 'logger'
@@ -25,8 +26,8 @@ module Langfuse
     sig { void }
     def initialize
       # Default configuration with environment variable fallbacks
-      @public_key = T.let(ENV['LANGFUSE_PUBLIC_KEY'], T.nilable(String))
-      @secret_key = T.let(ENV['LANGFUSE_SECRET_KEY'], T.nilable(String))
+      @public_key = T.let(ENV.fetch('LANGFUSE_PUBLIC_KEY', nil), T.nilable(String))
+      @secret_key = T.let(ENV.fetch('LANGFUSE_SECRET_KEY', nil), T.nilable(String))
       @host = T.let(ENV.fetch('LANGFUSE_HOST', 'https://us.cloud.langfuse.com'), String)
       @batch_size = T.let(ENV.fetch('LANGFUSE_BATCH_SIZE', '10').to_i, Integer)
       @flush_interval = T.let(ENV.fetch('LANGFUSE_FLUSH_INTERVAL', '60').to_i, Integer)

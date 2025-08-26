@@ -1,4 +1,6 @@
+# frozen_string_literal: true
 # typed: true
+
 require 'securerandom'
 
 module Langfuse
@@ -43,4 +45,4 @@ module Langfuse
       end
     end
   end
-end 
+end

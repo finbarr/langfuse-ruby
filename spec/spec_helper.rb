@@ -26,10 +26,10 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  config.before(:each) do
+  config.before do
     # Reset configuration before each test
     Langfuse.configuration = Langfuse::Configuration.new
-    
+
     # Set test credentials
     Langfuse.configure do |c|
       c.public_key = 'test-public-key'
@@ -39,7 +39,7 @@ RSpec.configure do |config|
     end
   end
 
-  config.after(:each) do
+  config.after do
     # Clean up after each test
     WebMock.reset!
   end

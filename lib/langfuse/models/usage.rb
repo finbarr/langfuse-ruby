@@ -1,4 +1,6 @@
+# frozen_string_literal: true
 # typed: true
+
 module Langfuse
   module Models
     class Usage

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe Langfuse::ApiClient do
+  subject(:client) { described_class.new(config) }
+
   let(:config) do
     instance_double(
       Langfuse::Configuration,
@@ -10,13 +12,11 @@ RSpec.describe Langfuse::ApiClient do
       debug: false
     )
   end
-  
-  subject(:client) { described_class.new(config) }
 
   describe '#ingest' do
     let(:events) do
       [
-        { 
+        {
           id: 'event-1',
           type: 'trace',
           body: { name: 'test-trace' }
@@ -31,7 +31,7 @@ RSpec.describe Langfuse::ApiClient do
 
     it 'sends events to the API' do
       response = client.ingest(events)
-      
+
       expect(response).to include('success' => true)
       expect(WebMock).to have_requested(:post, 'https://test.langfuse.com/api/public/ingestion')
         .with(body: { batch: events })
@@ -40,9 +40,9 @@ RSpec.describe Langfuse::ApiClient do
 
     it 'includes authorization header' do
       expected_auth = Base64.strict_encode64('test-public-key:test-secret-key')
-      
+
       client.ingest(events)
-      
+
       expect(WebMock).to have_requested(:post, 'https://test.langfuse.com/api/public/ingestion')
         .with(headers: { 'Authorization' => "Basic #{expected_auth}" })
         .once
@@ -71,8 +71,9 @@ RSpec.describe Langfuse::ApiClient do
       end
 
       it 'logs debug information' do
-        expect(client).to receive(:log).at_least(:once)
+        allow(client).to receive(:log)
         client.ingest(events)
+        expect(client).to have_received(:log).at_least(:once)
       end
     end
   end

@@ -51,12 +51,17 @@ RSpec.describe Langfuse::Configuration do
         ENV.delete('LANGFUSE_SHUTDOWN_TIMEOUT')
       end
 
-      it 'reads values from environment variables' do
+      it 'reads credentials from environment variables' do
         config = described_class.new
-        
+
         expect(config.public_key).to eq('env-public-key')
         expect(config.secret_key).to eq('env-secret-key')
         expect(config.host).to eq('https://env.langfuse.com')
+      end
+
+      it 'reads settings from environment variables' do
+        config = described_class.new
+
         expect(config.batch_size).to eq(20)
         expect(config.flush_interval).to eq(30)
         expect(config.debug).to be(true)

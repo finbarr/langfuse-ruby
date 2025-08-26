@@ -1,0 +1,77 @@
+plugins:
+  - rubocop-rake
+
+require:
+  - rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 2.7
+  NewCops: enable
+  Exclude:
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+    - 'bin/**/*'
+    - 'sorbet/**/*'
+    - 'node_modules/**/*'
+
+# Style exceptions for this gem
+Style/Documentation:
+  Enabled: false  # We use YARD for documentation
+
+Metrics/ModuleLength:
+  Max: 200  # LangfuseHelper is a large helper module
+
+Metrics/MethodLength:
+  Max: 30  # Some complex methods in helpers
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - '*.gemspec'
+    - 'Rakefile'
+
+Metrics/AbcSize:
+  Max: 30  # Some complex methods need this
+
+Metrics/CyclomaticComplexity:
+  Max: 15
+
+Metrics/PerceivedComplexity:
+  Max: 15
+
+Metrics/ParameterLists:
+  Max: 7  # Some methods have many optional parameters
+
+# RSpec specific settings
+RSpec/ExampleLength:
+  Max: 20
+
+RSpec/MultipleExpectations:
+  Max: 5
+
+RSpec/NestedGroups:
+  Max: 4
+
+RSpec/SubjectStub:
+  Enabled: false
+
+# Disable gemspec development dependency warning since we already have them in Gemfile
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+# Allow longer lines in gemspecs
+Layout/LineLength:
+  Exclude:
+    - '*.gemspec'
+
+# Sorbet compatibility
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+# Allow modern Ruby features
+Style/HashSyntax:
+  EnforcedStyle: ruby19
+
+Style/SymbolProc:
+  Enabled: true

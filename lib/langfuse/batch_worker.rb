@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # typed: strict
 
 require 'sorbet-runtime'
@@ -5,6 +6,7 @@ require 'sorbet-runtime'
 module Langfuse
   class BatchWorker
     extend T::Sig
+
     # This is a placeholder class that will be defined with Sidekiq::Worker
     # when Sidekiq is available.
     #
@@ -52,7 +54,7 @@ module Langfuse
 
           # Check for partial failures using standard hash access
           errors = T.let(response['errors'], T.nilable(T::Array[T::Hash[String, T.untyped]]))
-          if errors && errors.any?
+          if errors&.any?
             errors.each do |error|
               # Use T.unsafe(self).logger provided by Sidekiq::Worker
               T.unsafe(self).logger.error("Langfuse API error for event #{error['id']}: #{error['message']}")
