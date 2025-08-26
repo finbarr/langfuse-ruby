@@ -22,6 +22,9 @@ module Langfuse
 
     sig { returns(T.untyped) }
     attr_accessor :logger
+    
+    sig { returns(T.nilable(Symbol)) }
+    attr_accessor :job_backend
 
     sig { void }
     def initialize
@@ -35,6 +38,10 @@ module Langfuse
       @disable_at_exit_hook = T.let(false, T::Boolean)
       @shutdown_timeout = T.let(ENV.fetch('LANGFUSE_SHUTDOWN_TIMEOUT', '5').to_i, Integer)
       @logger = T.let(Logger.new($stdout), Logger)
+      
+      # Job backend: :sidekiq, :active_job, :synchronous, or nil for auto-detect
+      job_backend_env = ENV.fetch('LANGFUSE_JOB_BACKEND', nil)
+      @job_backend = T.let(job_backend_env&.to_sym, T.nilable(Symbol))
     end
   end
 end

@@ -23,6 +23,9 @@ module Langfuse
 
     sig { returns(T.nilable(Thread)) }
     attr_reader :flush_thread
+    
+    sig { returns(T.untyped) }
+    attr_reader :job_adapter
 
     sig { void }
     def initialize
@@ -35,6 +38,10 @@ module Langfuse
       @events = T.let(Concurrent::Array.new, Concurrent::Array)
       @mutex = T.let(Mutex.new, Mutex)
       @flush_thread = T.let(nil, T.nilable(Thread))
+      
+      # Initialize job adapter
+      require 'langfuse/job_adapter'
+      @job_adapter = T.let(JobAdapter.new(@config.job_backend), T.untyped)
 
       schedule_periodic_flush
 
@@ -164,8 +171,8 @@ module Langfuse
 
       log("Flushing #{event_hashes.size} events")
 
-      # Send to background worker
-      T.unsafe(BatchWorker).perform_async(event_hashes)
+      # Send to job backend via adapter
+      @job_adapter.enqueue(event_hashes)
     end
 
     # Gracefully shuts down the client, ensuring all events are flushed

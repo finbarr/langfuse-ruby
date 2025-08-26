@@ -47,6 +47,7 @@ end
 - `debug`: Enable debug logging (default: false)
 - `disable_at_exit_hook`: Disable automatic flush on program exit (default: false)
 - `shutdown_timeout`: Seconds to wait for flush thread to finish on shutdown (default: 5)
+- `job_backend`: Job processing backend - `:active_job`, `:sidekiq`, `:synchronous`, or `nil` for auto-detect (default: nil)
 
 ## Usage
 
@@ -188,11 +189,61 @@ ActiveSupport::Notifications.instrument('langfuse.trace', {
 })
 ```
 
-## Background Processing with Sidekiq
+## Background Processing
 
-If Sidekiq is available in your application, the SDK will automatically use it for processing events in the background. This improves performance and reliability.
+The SDK supports multiple background job processing backends for improved performance and reliability.
 
-To enable Sidekiq integration, simply add Sidekiq to your application and it will be detected automatically.
+### ActiveJob / Solid Queue (Rails 7.1+)
+
+For modern Rails applications using Solid Queue or any ActiveJob backend:
+
+```ruby
+# config/initializers/langfuse.rb
+Langfuse.configure do |config|
+  config.public_key = ENV['LANGFUSE_PUBLIC_KEY']
+  config.secret_key = ENV['LANGFUSE_SECRET_KEY']
+  config.job_backend = :active_job  # Use Rails' ActiveJob
+end
+
+# The SDK will use your configured ActiveJob backend (Solid Queue, GoodJob, etc.)
+```
+
+### Sidekiq
+
+For applications using Sidekiq:
+
+```ruby
+# config/initializers/langfuse.rb
+Langfuse.configure do |config|
+  config.public_key = ENV['LANGFUSE_PUBLIC_KEY']
+  config.secret_key = ENV['LANGFUSE_SECRET_KEY']
+  config.job_backend = :sidekiq  # Use Sidekiq directly
+end
+```
+
+### Auto-detection
+
+If you don't specify a `job_backend`, the SDK will auto-detect in this order:
+1. ActiveJob (if available) - Works with any Rails queue adapter
+2. Sidekiq (if available) - Direct Sidekiq integration
+3. Synchronous - Falls back to synchronous processing
+
+```ruby
+# Let the SDK auto-detect the best available backend
+Langfuse.configure do |config|
+  config.public_key = ENV['LANGFUSE_PUBLIC_KEY']
+  config.secret_key = ENV['LANGFUSE_SECRET_KEY']
+  # job_backend is not set - will auto-detect
+end
+```
+
+### Environment Variable Configuration
+
+You can also set the job backend via environment variable:
+
+```bash
+export LANGFUSE_JOB_BACKEND=active_job  # or sidekiq, or synchronous
+```
 
 ## Development
 

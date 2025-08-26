@@ -15,11 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.gitignore` file for proper version control
 - `Gemfile` and `Rakefile` for standard Ruby gem development
 - This CHANGELOG file
+- **ActiveJob support** - Modern Rails applications can now use ActiveJob with any backend (Solid Queue, GoodJob, etc.)
+- **Job adapter system** - Flexible backend selection for job processing
+- Auto-detection of available job backends
+- Environment variable support for job backend configuration (`LANGFUSE_JOB_BACKEND`)
 
 ### Changed
 - **BREAKING**: Renamed gem from `langfuse` to `langfuse-ruby` to avoid conflicts
 - Bumped version to 1.0.0 for the fork
 - Updated author information (Finbarr Taylor)
+- Refactored job processing to support multiple backends (ActiveJob, Sidekiq, synchronous)
 
 ### Fixed
 - **Security**: Fixed credential logging issue - sensitive data (secret keys and auth tokens) are now properly masked in debug logs
