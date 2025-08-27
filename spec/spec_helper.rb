@@ -10,10 +10,6 @@ end
 
 require 'bundler/setup'
 
-# Disable Sorbet runtime checking in tests to allow mocking
-require 'sorbet-runtime'
-T::Configuration.default_checked_level = :never
-
 require 'langfuse'
 require 'webmock/rspec'
 

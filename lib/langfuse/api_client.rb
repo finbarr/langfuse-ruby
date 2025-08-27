@@ -1,25 +1,18 @@
 # frozen_string_literal: true
-# typed: strict
 
 require 'net/http'
 require 'uri'
 require 'json'
 require 'base64'
-require 'sorbet-runtime'
 
 module Langfuse
   class ApiClient
-    extend T::Sig
-
-    sig { returns(T.untyped) }
     attr_reader :config
 
-    sig { params(config: T.untyped).void }
     def initialize(config)
       @config = config
     end
 
-    sig { params(events: T::Array[T::Hash[T.untyped, T.untyped]]).returns(T::Hash[String, T.untyped]) }
     def ingest(events)
       uri = URI.parse("#{@config.host}/api/public/ingestion")
 
@@ -57,7 +50,7 @@ module Langfuse
 
       response = http.request(request)
 
-      result = T.let(nil, T.nilable(T::Hash[String, T.untyped]))
+      result = nil
 
       if response.code.to_i == 207 # Partial success
         log('Received 207 partial success response') if @config.debug
@@ -83,11 +76,10 @@ module Langfuse
 
     private
 
-    sig { params(message: String, level: Symbol).returns(T.untyped) }
     def log(message, level = :debug)
       return unless @config.debug
 
-      T.unsafe(@config.logger).send(level, "[Langfuse] #{message}")
+      @config.logger.send(level, "[Langfuse] #{message}")
     end
   end
 end

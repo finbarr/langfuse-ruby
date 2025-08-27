@@ -1,47 +1,31 @@
 # frozen_string_literal: true
-# typed: strict
 
 require 'singleton'
 require 'concurrent'
 require 'logger'
-require 'sorbet-runtime'
 
 # Model requires are implicitly handled by the main langfuse.rb require
 # No need for placeholder type aliases here
 
 module Langfuse
   class Client
-    extend T::Sig
     include Singleton
 
-    sig { returns(::Langfuse::Configuration) } # Use actual Configuration type
-    attr_reader :config
+    attr_reader :config, :events, :flush_thread, :job_adapter
 
-    # Use the class directly, Sorbet should handle Concurrent::Array generics
-    sig { returns(Concurrent::Array) }
-    attr_reader :events
-
-    sig { returns(T.nilable(Thread)) }
-    attr_reader :flush_thread
-
-    sig { returns(T.untyped) }
-    attr_reader :job_adapter
-
-    sig { void }
     def initialize
-      @config = T.let(Langfuse.configuration, ::Langfuse::Configuration)
+      @config = Langfuse.configuration
 
       # Validate required configuration
       validate_configuration!
 
-      # Let Sorbet infer the type for Concurrent::Array here
-      @events = T.let(Concurrent::Array.new, Concurrent::Array)
-      @mutex = T.let(Mutex.new, Mutex)
-      @flush_thread = T.let(nil, T.nilable(Thread))
+      @events = Concurrent::Array.new
+      @mutex = Mutex.new
+      @flush_thread = nil
 
       # Initialize job adapter
       require 'langfuse/job_adapter'
-      @job_adapter = T.let(JobAdapter.new(@config.job_backend), T.untyped)
+      @job_adapter = JobAdapter.new(@config.job_backend)
 
       schedule_periodic_flush
 
@@ -52,11 +36,9 @@ module Langfuse
     end
 
     # Creates a new trace
-    sig { params(attributes: T::Hash[Symbol, T.untyped]).returns(T.untyped) }
     def trace(attributes = {})
-      # Ideally Models::Trace.new would have its own signature
-      trace = T.unsafe(Models::Trace).new(attributes)
-      event = T.unsafe(Models::IngestionEvent).new(
+      trace = Models::Trace.new(attributes)
+      event = Models::IngestionEvent.new(
         type: 'trace-create',
         body: trace
       )
@@ -65,12 +47,11 @@ module Langfuse
     end
 
     # Creates a new span within a trace
-    sig { params(attributes: T::Hash[Symbol, T.untyped]).returns(T.untyped) }
     def span(attributes = {})
       raise ArgumentError, 'trace_id is required for creating a span' unless attributes[:trace_id]
 
-      span = T.unsafe(Models::Span).new(attributes)
-      event = T.unsafe(Models::IngestionEvent).new(
+      span = Models::Span.new(attributes)
+      event = Models::IngestionEvent.new(
         type: 'span-create',
         body: span
       )
@@ -79,15 +60,14 @@ module Langfuse
     end
 
     # Updates an existing span
-    sig { params(span: T.untyped).returns(T.untyped) }
     def update_span(span)
       # Assuming span object has :id and :trace_id methods/attributes
-      unless T.unsafe(span).id && T.unsafe(span).trace_id
+      unless span.id && span.trace_id
         raise ArgumentError,
               'span.id and span.trace_id are required for updating a span'
       end
 
-      event = T.unsafe(Models::IngestionEvent).new(
+      event = Models::IngestionEvent.new(
         type: 'span-update',
         body: span
       )
@@ -96,12 +76,11 @@ module Langfuse
     end
 
     # Creates a new generation within a trace
-    sig { params(attributes: T::Hash[Symbol, T.untyped]).returns(T.untyped) }
     def generation(attributes = {})
       raise ArgumentError, 'trace_id is required for creating a generation' unless attributes[:trace_id]
 
-      generation = T.unsafe(Models::Generation).new(attributes)
-      event = T.unsafe(Models::IngestionEvent).new(
+      generation = Models::Generation.new(attributes)
+      event = Models::IngestionEvent.new(
         type: 'generation-create',
         body: generation
       )
@@ -110,13 +89,12 @@ module Langfuse
     end
 
     # Updates an existing generation
-    sig { params(generation: T.untyped).returns(T.untyped) }
     def update_generation(generation)
-      unless T.unsafe(generation).id && T.unsafe(generation).trace_id
+      unless generation.id && generation.trace_id
         raise ArgumentError, 'generation.id and generation.trace_id are required for updating a generation'
       end
 
-      event = T.unsafe(Models::IngestionEvent).new(
+      event = Models::IngestionEvent.new(
         type: 'generation-update',
         body: generation
       )
@@ -125,12 +103,11 @@ module Langfuse
     end
 
     # Creates a new event within a trace
-    sig { params(attributes: T::Hash[Symbol, T.untyped]).returns(T.untyped) }
     def event(attributes = {})
       raise ArgumentError, 'trace_id is required for creating an event' unless attributes[:trace_id]
 
-      event_obj = T.unsafe(Models::Event).new(attributes)
-      event = T.unsafe(Models::IngestionEvent).new(
+      event_obj = Models::Event.new(attributes)
+      event = Models::IngestionEvent.new(
         type: 'event-create',
         body: event_obj
       )
@@ -139,12 +116,11 @@ module Langfuse
     end
 
     # Creates a new score
-    sig { params(attributes: T::Hash[Symbol, T.untyped]).returns(T.untyped) }
     def score(attributes = {})
       raise ArgumentError, 'trace_id is required for creating a score' unless attributes[:trace_id]
 
-      score = T.unsafe(Models::Score).new(attributes)
-      event = T.unsafe(Models::IngestionEvent).new(
+      score = Models::Score.new(attributes)
+      event = Models::IngestionEvent.new(
         type: 'score-create',
         body: score
       )
@@ -153,9 +129,8 @@ module Langfuse
     end
 
     # Flushes all pending events to the API
-    sig { void }
     def flush
-      events_to_process = T.let([], T::Array[T.untyped])
+      events_to_process = []
 
       # Atomically swap the events array to avoid race conditions
       @mutex.synchronize do
@@ -166,7 +141,6 @@ module Langfuse
       return if events_to_process.empty?
 
       # Convert objects to hashes for serialization
-      # Assuming `to_h` exists on Models::IngestionEvent and returns T::Hash[T.untyped, T.untyped]
       event_hashes = events_to_process.map(&:to_h)
 
       log("Flushing #{event_hashes.size} events")
@@ -176,7 +150,6 @@ module Langfuse
     end
 
     # Gracefully shuts down the client, ensuring all events are flushed
-    sig { void }
     def shutdown
       log('Shutting down Langfuse client...')
 
@@ -191,7 +164,6 @@ module Langfuse
 
     private
 
-    sig { params(event: T.untyped).void }
     def enqueue_event(event)
       @events << event
 
@@ -200,7 +172,6 @@ module Langfuse
       flush if @events.size >= @config.batch_size
     end
 
-    sig { returns(Thread) }
     def schedule_periodic_flush
       log("Starting periodic flush thread (interval: #{@config.flush_interval}s)")
 
@@ -216,15 +187,13 @@ module Langfuse
       end
     end
 
-    sig { params(message: String, level: Symbol).returns(T.untyped) }
     def log(message, level = :debug)
       # Assuming @config.debug is Boolean
       return unless @config.debug
 
-      T.unsafe(@config.logger).send(level, "[Langfuse] #{message}")
+      @config.logger.send(level, "[Langfuse] #{message}")
     end
 
-    sig { void }
     def validate_configuration!
       errors = []
       errors << 'public_key is required' if @config.public_key.nil? || @config.public_key.empty?

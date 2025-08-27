@@ -48,6 +48,7 @@ end
 - `disable_at_exit_hook`: Disable automatic flush on program exit (default: false)
 - `shutdown_timeout`: Seconds to wait for flush thread to finish on shutdown (default: 5)
 - `job_backend`: Job processing backend - `:active_job`, `:sidekiq`, `:synchronous`, or `nil` for auto-detect (default: nil)
+- `queue_name`: Name of the queue for background jobs (default: 'langfuse'). Used by ActiveJob (including Solid Queue) and Sidekiq backends
 
 ## Usage
 
@@ -191,58 +192,66 @@ ActiveSupport::Notifications.instrument('langfuse.trace', {
 
 ## Background Processing
 
-The SDK supports multiple background job processing backends for improved performance and reliability.
+By default, the SDK processes events synchronously. For better performance in production, you can enable background processing with ActiveJob or Sidekiq.
 
-### ActiveJob / Solid Queue (Rails 7.1+)
+### ActiveJob (Rails / Solid Queue)
 
-For modern Rails applications using Solid Queue or any ActiveJob backend:
+For Rails applications using ActiveJob (including Solid Queue, GoodJob, etc.):
 
 ```ruby
-# config/initializers/langfuse.rb
+# In your Gemfile
+gem 'langfuse-ruby'
+
+# In config/initializers/langfuse.rb
+require 'langfuse-ruby/active_job'  # Load ActiveJob support
+
 Langfuse.configure do |config|
   config.public_key = ENV['LANGFUSE_PUBLIC_KEY']
   config.secret_key = ENV['LANGFUSE_SECRET_KEY']
-  config.job_backend = :active_job  # Use Rails' ActiveJob
+  config.queue_name = 'default'  # Optional: specify queue name
 end
-
-# The SDK will use your configured ActiveJob backend (Solid Queue, GoodJob, etc.)
 ```
 
 ### Sidekiq
 
-For applications using Sidekiq:
+For applications using Sidekiq directly:
 
 ```ruby
-# config/initializers/langfuse.rb
+# In your Gemfile
+gem 'langfuse-ruby'
+gem 'sidekiq'
+
+# In config/initializers/langfuse.rb
+require 'langfuse-ruby/sidekiq'  # Load Sidekiq support
+
 Langfuse.configure do |config|
   config.public_key = ENV['LANGFUSE_PUBLIC_KEY']
   config.secret_key = ENV['LANGFUSE_SECRET_KEY']
-  config.job_backend = :sidekiq  # Use Sidekiq directly
+  config.queue_name = 'default'  # Optional: specify queue name
 end
 ```
 
-### Auto-detection
+### Synchronous (Default)
 
-If you don't specify a `job_backend`, the SDK will auto-detect in this order:
-1. ActiveJob (if available) - Works with any Rails queue adapter
-2. Sidekiq (if available) - Direct Sidekiq integration
-3. Synchronous - Falls back to synchronous processing
+If you don't require ActiveJob or Sidekiq support, events are processed synchronously:
 
 ```ruby
-# Let the SDK auto-detect the best available backend
+# In config/initializers/langfuse.rb
+require 'langfuse'  # Just the base gem
+
 Langfuse.configure do |config|
   config.public_key = ENV['LANGFUSE_PUBLIC_KEY']
   config.secret_key = ENV['LANGFUSE_SECRET_KEY']
-  # job_backend is not set - will auto-detect
 end
 ```
 
 ### Environment Variable Configuration
 
-You can also set the job backend via environment variable:
+You can also set the job backend and queue name via environment variables:
 
 ```bash
 export LANGFUSE_JOB_BACKEND=active_job  # or sidekiq, or synchronous
+export LANGFUSE_QUEUE_NAME=my_custom_queue  # defaults to 'langfuse'
 ```
 
 ## Development

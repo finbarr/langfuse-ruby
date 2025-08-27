@@ -19,90 +19,96 @@ RSpec.describe Langfuse::JobAdapter do
     end
 
     context 'when backend is not set' do
-      it 'auto-detects synchronous when no job libraries are available' do
+      it 'defaults to synchronous' do
         adapter = described_class.new
         expect(adapter.backend).to eq(:synchronous)
-      end
-
-      context 'with ActiveJob defined' do
-        before do
-          stub_const('ActiveJob', Class.new)
-        end
-
-        it 'auto-detects active_job' do
-          adapter = described_class.new
-          expect(adapter.backend).to eq(:active_job)
-        end
-      end
-
-      context 'with Sidekiq defined' do
-        before do
-          stub_const('Sidekiq', Class.new)
-          hide_const('ActiveJob') if defined?(ActiveJob)
-        end
-
-        it 'auto-detects sidekiq' do
-          adapter = described_class.new
-          expect(adapter.backend).to eq(:sidekiq)
-        end
       end
     end
   end
 
   describe '#enqueue' do
-    let(:adapter) { described_class.new(backend) }
     let(:api_client) { instance_double(Langfuse::ApiClient) }
+    let(:config) { instance_double(Langfuse::Configuration, queue_name: 'langfuse') }
 
     before do
-      allow(Langfuse::ApiClient).to receive(:new).and_return(api_client)
-      allow(api_client).to receive(:ingest).and_return({ 'success' => true })
+      allow(Langfuse).to receive(:configuration).and_return(config)
+      allow(Langfuse::ApiClient).to receive(:new).with(config).and_return(api_client)
     end
 
     context 'with synchronous backend' do
-      let(:backend) { :synchronous }
+      let(:adapter) { described_class.new(:synchronous) }
 
       it 'processes events synchronously' do
+        allow(api_client).to receive(:ingest).with(event_hashes).and_return({ 'success' => true })
         adapter.enqueue(event_hashes)
         expect(api_client).to have_received(:ingest).with(event_hashes)
       end
     end
 
     context 'with sidekiq backend' do
-      let(:backend) { :sidekiq }
-      let(:batch_worker) { class_double('Langfuse::BatchWorker') }
+      let(:adapter) { described_class.new(:sidekiq) }
 
-      before do
-        stub_const('Langfuse::BatchWorker', batch_worker)
-        allow(batch_worker).to receive(:perform_async)
+      context 'when Sidekiq support is loaded' do
+        before do
+          batch_worker = Class.new do
+            def self.perform_async(_events)
+              true
+            end
+          end
+          stub_const('Langfuse::BatchWorker', batch_worker)
+        end
+
+        it 'enqueues to Sidekiq' do
+          allow(Langfuse::BatchWorker).to receive(:perform_async).with(event_hashes)
+          adapter.enqueue(event_hashes)
+          expect(Langfuse::BatchWorker).to have_received(:perform_async).with(event_hashes)
+        end
       end
 
-      it 'enqueues to Sidekiq' do
-        adapter.enqueue(event_hashes)
-        expect(batch_worker).to have_received(:perform_async).with(event_hashes)
+      context 'when Sidekiq support is not loaded' do
+        before do
+          hide_const('Langfuse::BatchWorker')
+        end
+
+        it 'raises an error' do
+          expect { adapter.enqueue(event_hashes) }.to raise_error(/Sidekiq support not loaded/)
+        end
       end
     end
 
     context 'with active_job backend' do
-      let(:backend) { :active_job }
+      let(:adapter) { described_class.new(:active_job) }
 
-      before do
-        # Don't actually load the job file in tests
-        allow(adapter).to receive(:require).with('langfuse/jobs/batch_ingestion_job')
+      context 'when ActiveJob support is loaded' do
+        before do
+          job_class = Class.new do
+            def self.perform_later(_events)
+              true
+            end
+          end
+          stub_const('Langfuse::Jobs::BatchIngestionJob', job_class)
+        end
 
-        # Create a mock job class
-        job_class = class_double('Langfuse::Jobs::BatchIngestionJob')
-        stub_const('Langfuse::Jobs::BatchIngestionJob', job_class)
-        allow(job_class).to receive(:perform_later)
+        it 'enqueues to ActiveJob' do
+          allow(Langfuse::Jobs::BatchIngestionJob).to receive(:perform_later).with(event_hashes)
+          adapter.enqueue(event_hashes)
+          expect(Langfuse::Jobs::BatchIngestionJob).to have_received(:perform_later).with(event_hashes)
+        end
       end
 
-      it 'enqueues to ActiveJob' do
-        adapter.enqueue(event_hashes)
-        expect(Langfuse::Jobs::BatchIngestionJob).to have_received(:perform_later).with(event_hashes)
+      context 'when ActiveJob support is not loaded' do
+        before do
+          hide_const('Langfuse::Jobs::BatchIngestionJob') if defined?(Langfuse::Jobs::BatchIngestionJob)
+        end
+
+        it 'raises an error' do
+          expect { adapter.enqueue(event_hashes) }.to raise_error(/ActiveJob support not loaded/)
+        end
       end
     end
 
     context 'with unknown backend' do
-      let(:backend) { :unknown }
+      let(:adapter) { described_class.new(:unknown_backend) }
 
       it 'raises an error' do
         expect { adapter.enqueue(event_hashes) }.to raise_error(ArgumentError, /Unknown job backend/)

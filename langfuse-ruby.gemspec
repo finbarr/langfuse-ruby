@@ -32,7 +32,6 @@ Gem::Specification.new do |spec|
 
   # Runtime dependencies
   spec.add_dependency 'concurrent-ruby', '~> 1.2'
-  spec.add_dependency 'sorbet-runtime', '~> 0.5'
 
   # Development dependencies
   spec.add_development_dependency 'bundler', '~> 2.0'
