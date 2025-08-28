@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2024-12-28
+
+### Added
+- **Tool Observations** - New `Tool` model and methods for tracking tool/function calls in LLM applications
+  - `Langfuse.tool()` - Create a tool observation to track tool invocations
+  - `Langfuse.update_tool()` - Update tool observations with results after execution
+  - Includes fields for `tool_name`, `tool_call_id`, and `arguments` to properly track tool usage
+- Comprehensive test coverage for tool observations
+
 ## [2.0.0] - 2024-12-27
 
 ### Breaking Changes

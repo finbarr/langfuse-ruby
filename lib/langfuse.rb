@@ -10,6 +10,7 @@ require 'langfuse/models/span'
 require 'langfuse/models/generation'
 require 'langfuse/models/event'
 require 'langfuse/models/score'
+require 'langfuse/models/tool'
 require 'langfuse/models/usage'
 
 # Load API client
@@ -72,6 +73,16 @@ module Langfuse
     # Create Score
     def score(attributes = {})
       Client.instance.score(attributes)
+    end
+
+    # Create Tool
+    def tool(attributes = {})
+      Client.instance.tool(attributes)
+    end
+
+    # Update Tool
+    def update_tool(tool)
+      Client.instance.update_tool(tool)
     end
 
     # Flush events

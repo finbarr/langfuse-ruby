@@ -56,5 +56,25 @@ RSpec.describe Langfuse do
 
       expect(mock_client).to have_received(:flush)
     end
+
+    it 'delegates tool to client' do
+      mock_tool = instance_double(Langfuse::Models::Tool)
+      allow(mock_client).to receive(:tool).with(hash_including(name: 'test_tool')).and_return(mock_tool)
+
+      result = described_class.tool(name: 'test_tool')
+
+      expect(result).to eq(mock_tool)
+      expect(mock_client).to have_received(:tool).with(hash_including(name: 'test_tool'))
+    end
+
+    it 'delegates update_tool to client' do
+      mock_tool = instance_double(Langfuse::Models::Tool)
+      allow(mock_client).to receive(:update_tool).with(mock_tool).and_return(mock_tool)
+
+      result = described_class.update_tool(mock_tool)
+
+      expect(result).to eq(mock_tool)
+      expect(mock_client).to have_received(:update_tool).with(mock_tool)
+    end
   end
 end

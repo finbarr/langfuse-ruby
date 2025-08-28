@@ -123,6 +123,34 @@ Langfuse.event(
 )
 ```
 
+### Tracking Tool/Function Calls
+
+Tool observations track LLM tool/function invocations:
+
+```ruby
+# Create a tool observation when starting the tool call
+tool = Langfuse.tool(
+  name: "Weather API Call",
+  trace_id: trace.id,
+  parent_observation_id: generation.id, # Optional: link to parent
+  tool_name: "get_weather",
+  tool_call_id: "call-unique-123",
+  arguments: { 
+    location: "San Francisco", 
+    units: "fahrenheit" 
+  }
+)
+
+# Execute your tool/function
+result = WeatherAPI.get_weather(location: "San Francisco", units: "fahrenheit")
+
+# Update the tool observation with results
+tool.output = result
+tool.end_time = Time.now.utc
+tool.status_message = "Successfully retrieved weather data"
+Langfuse.update_tool(tool)
+```
+
 ### Adding Scores
 
 Scores help evaluate quality:

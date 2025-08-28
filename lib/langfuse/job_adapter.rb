@@ -28,6 +28,7 @@ module Langfuse
       unless defined?(Langfuse::BatchWorker)
         raise "Sidekiq support not loaded. Add: require 'langfuse-ruby/sidekiq' to your code"
       end
+
       Langfuse::BatchWorker.perform_async(event_hashes)
     end
 
@@ -35,6 +36,7 @@ module Langfuse
       unless defined?(Langfuse::Jobs::BatchIngestionJob)
         raise "ActiveJob support not loaded. Add: require 'langfuse-ruby/active_job' to your code"
       end
+
       Langfuse::Jobs::BatchIngestionJob.perform_later(event_hashes)
     end
 

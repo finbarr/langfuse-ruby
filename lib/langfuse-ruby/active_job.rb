@@ -12,16 +12,16 @@ module Langfuse
   module Jobs
     class BatchIngestionJob < ActiveJob::Base
       queue_as { Langfuse.configuration.queue_name.to_sym }
-      
+
       retry_on StandardError, wait: :exponentially_longer, attempts: 5
       discard_on ArgumentError
 
       def perform(event_hashes)
         api_client = Langfuse::ApiClient.new(Langfuse.configuration)
-        
+
         begin
           response = api_client.ingest(event_hashes)
-          
+
           errors = response['errors']
           handle_errors(errors, event_hashes) if errors&.any?
         rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNREFUSED => e
@@ -43,7 +43,9 @@ module Langfuse
 
       def handle_errors(errors, event_hashes)
         errors.each do |error|
-          Rails.logger.error("Langfuse API error for event #{error['id']}: #{error['message']}") if defined?(Rails) && Rails.respond_to?(:logger)
+          if defined?(Rails) && Rails.respond_to?(:logger)
+            Rails.logger.error("Langfuse API error for event #{error['id']}: #{error['message']}")
+          end
 
           status = error['status'].to_i
           next unless non_retryable_error?(status)
