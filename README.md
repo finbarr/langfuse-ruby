@@ -123,33 +123,39 @@ Langfuse.event(
 )
 ```
 
-### Tracking Tool/Function Calls
+### Tracking Different Observation Types
 
-Tool observations track LLM tool/function invocations:
+You can track various observation types using the `type` parameter:
 
 ```ruby
-# Create a tool observation when starting the tool call
-tool = Langfuse.tool(
+# Tool/Function Call
+tool_span = Langfuse.span(
   name: "Weather API Call",
   trace_id: trace.id,
+  type: 'TOOL',  # Marks this as a tool observation
   parent_observation_id: generation.id, # Optional: link to parent
-  tool_name: "get_weather",
-  tool_call_id: "call-unique-123",
-  arguments: { 
-    location: "San Francisco", 
-    units: "fahrenheit" 
+  input: { 
+    function: "get_weather",
+    arguments: { location: "San Francisco", units: "fahrenheit" }
   }
 )
 
 # Execute your tool/function
 result = WeatherAPI.get_weather(location: "San Francisco", units: "fahrenheit")
 
-# Update the tool observation with results
-tool.output = result
-tool.end_time = Time.now.utc
-tool.status_message = "Successfully retrieved weather data"
-Langfuse.update_tool(tool)
+# Update the observation with results
+tool_span.output = result
+tool_span.end_time = Time.now.utc
+tool_span.status_message = "Successfully retrieved weather data"
+Langfuse.update_span(tool_span)
+
+# Other observation types
+agent_span = Langfuse.span(trace_id: trace.id, name: 'agent', type: 'AGENT')
+chain_span = Langfuse.span(trace_id: trace.id, name: 'chain', type: 'CHAIN')
+retriever_span = Langfuse.span(trace_id: trace.id, name: 'retriever', type: 'RETRIEVER')
 ```
+
+Available observation types: `SPAN`, `GENERATION`, `EVENT`, `TOOL`, `AGENT`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`
 
 ### Adding Scores
 

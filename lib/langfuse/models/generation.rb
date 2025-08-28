@@ -10,7 +10,7 @@ module Langfuse
                     :metadata, :input, :output, :level, :status_message,
                     :parent_observation_id, :version, :environment,
                     :completion_start_time, :model, :model_parameters,
-                    :usage, :prompt_name, :prompt_version
+                    :usage, :prompt_name, :prompt_version, :type
 
       def initialize(attributes = {})
         attributes.each do |key, value|
@@ -18,12 +18,14 @@ module Langfuse
         end
         @id ||= SecureRandom.uuid
         @start_time ||= Time.now.utc
+        @type ||= 'GENERATION'
       end
 
       def to_h
         {
           id: @id,
           traceId: @trace_id,
+          type: @type,
           name: @name,
           startTime: @start_time&.iso8601(3),
           endTime: @end_time&.iso8601(3),

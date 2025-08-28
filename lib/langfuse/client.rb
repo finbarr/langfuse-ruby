@@ -47,6 +47,7 @@ module Langfuse
     end
 
     # Creates a new span within a trace
+    # The type parameter allows creating different observation types (SPAN, TOOL, AGENT, etc.)
     def span(attributes = {})
       raise ArgumentError, 'trace_id is required for creating a span' unless attributes[:trace_id]
 
@@ -126,31 +127,6 @@ module Langfuse
       )
       enqueue_event(event)
       score
-    end
-
-    # Creates a new tool observation within a trace
-    def tool(attributes = {})
-      raise ArgumentError, 'trace_id is required for creating a tool' unless attributes[:trace_id]
-
-      tool = Models::Tool.new(attributes)
-      event = Models::IngestionEvent.new(
-        type: 'tool-create',
-        body: tool
-      )
-      enqueue_event(event)
-      tool
-    end
-
-    # Updates an existing tool observation (e.g., with results after execution)
-    def update_tool(tool)
-      raise ArgumentError, 'tool.id and tool.trace_id are required for updating a tool' unless tool.id && tool.trace_id
-
-      event = Models::IngestionEvent.new(
-        type: 'tool-update',
-        body: tool
-      )
-      enqueue_event(event)
-      tool
     end
 
     # Flushes all pending events to the API

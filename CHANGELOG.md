@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2024-12-28
+
+### Breaking Changes
+- **Removed Tool model class** - The separate `Tool` model has been removed in favor of using observation types
+- **Removed tool-specific methods** - `Langfuse.tool()` and `Langfuse.update_tool()` methods have been removed
+  
+### Added
+- **Observation type support** - All observation models (Span, Event, Generation) now support a `type` field
+  - Allows creating different observation types: `SPAN`, `GENERATION`, `EVENT`, `TOOL`, `AGENT`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`
+  - Example: `Langfuse.span(trace_id: trace.id, name: 'my_tool', type: 'TOOL')`
+- Aligns Ruby implementation with Python SDK and OpenAPI specification
+
+### Fixed
+- Proper alignment with Langfuse OpenAPI specification for observation types
+
+### Migration Guide
+If you were using the Tool model in v2.1.0:
+```ruby
+# Old way (v2.1.0)
+tool = Langfuse.tool(trace_id: trace.id, name: 'search', tool_name: 'web_search')
+
+# New way (v3.0.0) 
+tool_span = Langfuse.span(trace_id: trace.id, name: 'search', type: 'TOOL')
+```
+
 ## [2.1.0] - 2024-12-28
 
 ### Added

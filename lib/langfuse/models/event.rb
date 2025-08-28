@@ -8,7 +8,7 @@ module Langfuse
     class Event
       attr_accessor :id, :trace_id, :name, :start_time,
                     :metadata, :input, :output, :level, :status_message,
-                    :parent_observation_id, :version, :environment
+                    :parent_observation_id, :version, :environment, :type
 
       def initialize(attributes = {})
         attributes.each do |key, value|
@@ -16,12 +16,14 @@ module Langfuse
         end
         @id ||= SecureRandom.uuid
         @start_time ||= Time.now.utc
+        @type ||= 'EVENT'
       end
 
       def to_h
         {
           id: @id,
           traceId: @trace_id,
+          type: @type,
           name: @name,
           startTime: @start_time&.iso8601(3),
           metadata: @metadata,
