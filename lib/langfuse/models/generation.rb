@@ -88,10 +88,20 @@ module Langfuse
       # Format a tool definition
       def format_tool(tool)
         return tool unless tool.is_a?(Hash)
-
+        
+        # If tool already has the correct structure, return it as-is
+        if tool[:type] && tool[:function]
+          return tool
+        end
+        
+        # Otherwise, format it
         {
           type: tool[:type] || 'function',
-          function: tool[:function]
+          function: tool[:function] || {
+            name: tool[:name],
+            description: tool[:description],
+            parameters: tool[:parameters]
+          }.compact
         }.compact
       end
 
