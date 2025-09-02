@@ -132,9 +132,7 @@ module Langfuse
 
     # Updates an existing observation
     def update_observation(observation)
-      unless observation.id
-        raise ArgumentError, 'observation.id is required for updating an observation'
-      end
+      raise ArgumentError, 'observation.id is required for updating an observation' unless observation.id
 
       event = Models::IngestionEvent.new(
         type: 'observation-update',

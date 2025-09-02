@@ -11,7 +11,7 @@ module Langfuse
                     :metadata, :input, :output, :level, :status_message,
                     :parent_observation_id, :version, :environment,
                     :completion_start_time, :model, :model_parameters,
-                    :usage, :usage_details, :cost_details, 
+                    :usage, :usage_details, :cost_details,
                     :prompt_name, :prompt_version, :prompt_id
 
       def initialize(attributes = {})
@@ -20,7 +20,7 @@ module Langfuse
         end
         @id ||= SecureRandom.uuid
         @start_time ||= Time.now.utc
-        
+
         # Default type based on provided attributes
         @type ||= determine_type(attributes)
       end
@@ -46,21 +46,21 @@ module Langfuse
         case @type
         when 'GENERATION'
           base_hash.merge!({
-            endTime: @end_time&.iso8601(3),
-            completionStartTime: @completion_start_time&.iso8601(3),
-            model: @model,
-            modelParameters: @model_parameters,
-            usage: @usage.respond_to?(:to_h) ? @usage.to_h : @usage,
-            usageDetails: @usage_details,
-            costDetails: @cost_details,
-            promptName: @prompt_name,
-            promptVersion: @prompt_version,
-            promptId: @prompt_id
-          })
+                             endTime: @end_time&.iso8601(3),
+                             completionStartTime: @completion_start_time&.iso8601(3),
+                             model: @model,
+                             modelParameters: @model_parameters,
+                             usage: @usage.respond_to?(:to_h) ? @usage.to_h : @usage,
+                             usageDetails: @usage_details,
+                             costDetails: @cost_details,
+                             promptName: @prompt_name,
+                             promptVersion: @prompt_version,
+                             promptId: @prompt_id
+                           })
         when 'SPAN'
           base_hash.merge!({
-            endTime: @end_time&.iso8601(3)
-          })
+                             endTime: @end_time&.iso8601(3)
+                           })
         when 'EVENT'
           # Events don't have end_time
         end
@@ -72,7 +72,7 @@ module Langfuse
 
       def determine_type(attributes)
         # Determine type based on attributes
-        if attributes[:model] || attributes[:completion_start_time] || 
+        if attributes[:model] || attributes[:completion_start_time] ||
            attributes[:prompt_name] || attributes[:usage]
           'GENERATION'
         elsif attributes[:end_time]

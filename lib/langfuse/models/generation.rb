@@ -10,7 +10,7 @@ module Langfuse
                     :metadata, :input, :output, :level, :status_message,
                     :parent_observation_id, :version, :environment,
                     :completion_start_time, :model, :model_parameters,
-                    :usage, :usage_details, :cost_details, :prompt_name, 
+                    :usage, :usage_details, :cost_details, :prompt_name,
                     :prompt_version, :type
 
       def initialize(attributes = {})
@@ -54,21 +54,17 @@ module Langfuse
       # Process input to ensure proper formatting for tool definitions
       def process_input(input)
         return input unless input.is_a?(Hash)
-        
+
         # Check if input contains tools or function definitions
         if input[:tools] || input[:functions]
           processed = input.dup
-          
+
           # Ensure tools are properly formatted
-          if input[:tools]
-            processed[:tools] = input[:tools].map { |tool| format_tool(tool) }
-          end
-          
+          processed[:tools] = input[:tools].map { |tool| format_tool(tool) } if input[:tools]
+
           # Handle tool_choice if present
-          if input[:tool_choice]
-            processed[:tool_choice] = input[:tool_choice]
-          end
-          
+          processed[:tool_choice] = input[:tool_choice] if input[:tool_choice]
+
           processed
         else
           input
@@ -78,7 +74,7 @@ module Langfuse
       # Process output to ensure proper formatting for tool calls
       def process_output(output)
         return output unless output.is_a?(Hash)
-        
+
         # Check if output contains tool_calls
         if output[:tool_calls]
           processed = output.dup
@@ -92,7 +88,7 @@ module Langfuse
       # Format a tool definition
       def format_tool(tool)
         return tool unless tool.is_a?(Hash)
-        
+
         {
           type: tool[:type] || 'function',
           function: tool[:function]
@@ -102,7 +98,7 @@ module Langfuse
       # Format a tool call
       def format_tool_call(call)
         return call unless call.is_a?(Hash)
-        
+
         {
           id: call[:id],
           type: call[:type] || 'function',
