@@ -116,6 +116,34 @@ module Langfuse
       event_obj
     end
 
+    # Creates a generic observation (can be SPAN, GENERATION, or EVENT)
+    def observation(attributes = {})
+      raise ArgumentError, 'trace_id is required for creating an observation' unless attributes[:trace_id]
+      raise ArgumentError, 'type is required (SPAN, GENERATION, or EVENT)' unless attributes[:type]
+
+      observation = Models::Observation.new(attributes)
+      event = Models::IngestionEvent.new(
+        type: 'observation-create',
+        body: observation
+      )
+      enqueue_event(event)
+      observation
+    end
+
+    # Updates an existing observation
+    def update_observation(observation)
+      unless observation.id
+        raise ArgumentError, 'observation.id is required for updating an observation'
+      end
+
+      event = Models::IngestionEvent.new(
+        type: 'observation-update',
+        body: observation
+      )
+      enqueue_event(event)
+      observation
+    end
+
     # Creates a new score
     def score(attributes = {})
       raise ArgumentError, 'trace_id is required for creating a score' unless attributes[:trace_id]

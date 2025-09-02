@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2025-01-02
+
+### Added
+- **Full Tool/Function Calling Support** - Complete support for OpenAI-style tool calling
+  - Generation model now processes tool definitions in input
+  - Automatic formatting of tool calls in output
+  - Support for `tools`, `tool_choice`, and `tool_calls` fields
+  - Compatible with both modern and legacy function calling formats
+- **Generic Observation API** - New unified observation model
+  - `Langfuse.observation()` method for creating any observation type
+  - `Langfuse.update_observation()` for updating observations
+  - Automatically determines type based on provided fields
+- **Enhanced Usage Tracking**
+  - Added `usage_details` field for detailed token breakdowns
+  - Added `cost_details` field for granular cost tracking
+  - Support for OpenAI token format (`prompt_tokens`, `completion_tokens`)
+- **Comprehensive Examples**
+  - Added `examples/tool_calling_example.rb` demonstrating full tool calling workflow
+
+### Changed
+- **Corrected Observation Types Documentation**
+  - Clarified that only 3 observation types exist: `SPAN`, `GENERATION`, `EVENT`
+  - Updated README to explain using `name` field for categorization
+  - Removed incorrect references to custom observation types (TOOL, AGENT, etc.)
+
+### Fixed
+- Generation model now properly handles complex input/output structures
+- Tool definitions and calls are correctly formatted for Langfuse API
+
 ## [3.0.0] - 2024-12-28
 
 ### Breaking Changes

@@ -123,39 +123,98 @@ Langfuse.event(
 )
 ```
 
-### Tracking Different Observation Types
+### Observation Types
 
-You can track various observation types using the `type` parameter:
+Langfuse supports three core observation types: `SPAN`, `GENERATION`, and `EVENT`. You use the `name` field to categorize observations within these types:
 
 ```ruby
-# Tool/Function Call
-tool_span = Langfuse.span(
-  name: "Weather API Call",
+# SPAN - Generic timed operations
+database_span = Langfuse.span(
+  name: "database-query",  # Use name to categorize the span
   trace_id: trace.id,
-  type: 'TOOL',  # Marks this as a tool observation
-  parent_observation_id: generation.id, # Optional: link to parent
-  input: { 
-    function: "get_weather",
-    arguments: { location: "San Francisco", units: "fahrenheit" }
+  input: { query: "SELECT * FROM users WHERE id = ?" },
+  metadata: { database: "postgresql" }
+)
+
+# GENERATION - LLM/model calls
+generation = Langfuse.generation(
+  name: "openai-chat-completion",
+  trace_id: trace.id,
+  model: "gpt-4",
+  input: messages,
+  output: response
+)
+
+# EVENT - Point-in-time occurrences
+Langfuse.event(
+  name: "cache-hit",
+  trace_id: trace.id,
+  metadata: { cache_key: "user_123" }
+)
+
+# Generic observation API (for advanced use)
+observation = Langfuse.observation(
+  type: "SPAN",  # Required: SPAN, GENERATION, or EVENT
+  trace_id: trace.id,
+  name: "custom-operation"
+)
+```
+
+### Tool/Function Calling Support
+
+Track LLM tool/function calls with full support for OpenAI-style tool definitions:
+
+```ruby
+# Track a generation with tool definitions
+generation = Langfuse.generation(
+  name: "chat-with-tools",
+  trace_id: trace.id,
+  model: "gpt-4",
+  input: {
+    messages: [
+      { role: "user", content: "What's the weather in Tokyo?" }
+    ],
+    tools: [
+      {
+        type: "function",
+        function: {
+          name: "get_weather",
+          description: "Get current weather",
+          parameters: {
+            type: "object",
+            properties: {
+              location: { type: "string" }
+            }
+          }
+        }
+      }
+    ]
+  },
+  output: {
+    role: "assistant",
+    tool_calls: [
+      {
+        id: "call_123",
+        type: "function",
+        function: {
+          name: "get_weather",
+          arguments: '{"location": "Tokyo"}'
+        }
+      }
+    ]
   }
 )
 
-# Execute your tool/function
-result = WeatherAPI.get_weather(location: "San Francisco", units: "fahrenheit")
-
-# Update the observation with results
-tool_span.output = result
-tool_span.end_time = Time.now.utc
-tool_span.status_message = "Successfully retrieved weather data"
-Langfuse.update_span(tool_span)
-
-# Other observation types
-agent_span = Langfuse.span(trace_id: trace.id, name: 'agent', type: 'AGENT')
-chain_span = Langfuse.span(trace_id: trace.id, name: 'chain', type: 'CHAIN')
-retriever_span = Langfuse.span(trace_id: trace.id, name: 'retriever', type: 'RETRIEVER')
+# Track the tool execution as a span
+tool_span = Langfuse.span(
+  name: "get_weather",
+  trace_id: trace.id,
+  parent_observation_id: generation.id,
+  input: { location: "Tokyo" },
+  output: { temperature: 22, condition: "sunny" },
+  metadata: { tool_call_id: "call_123" }
+)
 ```
-
-Available observation types: `SPAN`, `GENERATION`, `EVENT`, `TOOL`, `AGENT`, `CHAIN`, `RETRIEVER`, `EVALUATOR`, `EMBEDDING`, `GUARDRAIL`
 
 ### Adding Scores
 

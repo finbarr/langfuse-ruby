@@ -9,6 +9,7 @@ require 'langfuse/models/trace'
 require 'langfuse/models/span'
 require 'langfuse/models/generation'
 require 'langfuse/models/event'
+require 'langfuse/models/observation'
 require 'langfuse/models/score'
 require 'langfuse/models/usage'
 
@@ -67,6 +68,16 @@ module Langfuse
     # Create Event
     def event(attributes = {})
       Client.instance.event(attributes)
+    end
+
+    # Create Observation (generic)
+    def observation(attributes = {})
+      Client.instance.observation(attributes)
+    end
+
+    # Update Observation
+    def update_observation(observation)
+      Client.instance.update_observation(observation)
     end
 
     # Create Score
